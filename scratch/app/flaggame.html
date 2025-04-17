@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Return to Home link -->
+<div class="nav">
+    <a href="../">← Back to Yerba Mate Home</a>
+</div>
+  <meta charset="UTF-8">
+  <title>Yerba Mate Country Quiz</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0fdf4;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      transition: background-color 0.5s;
+    }
+    h1 {
+      color: #2e7d32;
+      margin-top: 20px;
+    }
+    #hearts {
+      margin: 10px;
+    }
+    .heart {
+      width: 30px;
+      margin: 5px;
+    }
+    #message {
+      font-size: 1.5em;
+      margin: 20px;
+    }
+    #options {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      max-width: 800px;
+      margin: 0 auto 30px;
+      padding: 0 20px;
+    }
+    .option-flag {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border: 5px solid transparent;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: border 0.3s, transform 0.3s;
+    }
+    .option-flag:hover {
+      border: 5px solid #81c784;
+      transform: scale(1.03);
+    }
+    .win {
+      animation: happyFlash 0.4s;
+    }
+    .lose {
+      animation: redFlash 0.4s;
+    }
+    @keyframes happyFlash {
+      0% { background-color: #c8e6c9; }
+      50% { background-color: #a5d6a7; }
+      100% { background-color: #f0fdf4; }
+    }
+    @keyframes redFlash {
+      0% { background-color: #ffcdd2; }
+      50% { background-color: #e57373; }
+      100% { background-color: #f0fdf4; }
+    }
+  </style>
+</head>
+<body>
+
+<h1>Yerba Mate Country Quiz</h1>
+
+<div id="hearts">
+  <img class="heart" src="https://cdn-icons-png.flaticon.com/512/833/833472.png" alt="Heart">
+  <img class="heart" src="https://cdn-icons-png.flaticon.com/512/833/833472.png" alt="Heart">
+  <img class="heart" src="https://cdn-icons-png.flaticon.com/512/833/833472.png" alt="Heart">
+</div>
+
+<div id="message">👉 Choose the Mate drinking country!</div>
+
+<div id="options"></div>
+
+<script>
+  const yerbaCountries = [
+    { name: "Paraguay", flag: "https://upload.wikimedia.org/wikipedia/commons/2/27/Flag_of_Paraguay.svg" },
+    { name: "Argentina", flag: "https://upload.wikimedia.org/wikipedia/commons/1/1a/Flag_of_Argentina.svg" },
+    { name: "Uruguay", flag: "https://upload.wikimedia.org/wikipedia/commons/f/fe/Flag_of_Uruguay.svg" },
+    { name: "Brazil", flag: "https://upload.wikimedia.org/wikipedia/en/0/05/Flag_of_Brazil.svg" }
+  ];
+
+  const worldCountries = [
+    { name: "Japan", flag: "https://upload.wikimedia.org/wikipedia/en/9/9e/Flag_of_Japan.svg" },
+    { name: "Canada", flag: "https://upload.wikimedia.org/wikipedia/commons/c/cf/Flag_of_Canada.svg" },
+    { name: "France", flag: "https://upload.wikimedia.org/wikipedia/en/c/c3/Flag_of_France.svg" },
+    { name: "Italy", flag: "https://upload.wikimedia.org/wikipedia/en/0/03/Flag_of_Italy.svg" },
+    { name: "Germany", flag: "https://upload.wikimedia.org/wikipedia/en/b/ba/Flag_of_Germany.svg" },
+    { name: "Mexico", flag: "https://upload.wikimedia.org/wikipedia/commons/f/fc/Flag_of_Mexico.svg" },
+    { name: "South Korea", flag: "https://upload.wikimedia.org/wikipedia/commons/0/09/Flag_of_South_Korea.svg" }
+  ];
+
+  let hearts = 3;
+  let remainingYerbaCountries = [...yerbaCountries];
+
+  function shuffle(array) {
+    for (let i = array.length-1; i>0; i--) {
+      const j = Math.floor(Math.random() * (i+1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+  }
+
+  function updateHearts() {
+    const heartsDiv = document.getElementById("hearts");
+    heartsDiv.innerHTML = "";
+    for (let i = 0; i < hearts; i++) {
+      heartsDiv.innerHTML += `<img class="heart" src="https://cdn-icons-png.flaticon.com/512/833/833472.png" alt="Heart">`;
+    }
+  }
+
+  function loadQuestion() {
+    if (hearts <= 0) {
+      document.getElementById("message").innerHTML = "💀 Game Over!";
+      document.getElementById("options").innerHTML = "";
+      return;
+    }
+
+    if (remainingYerbaCountries.length === 0) {
+      document.getElementById("message").innerHTML = "🎉 You Guessed All Mate Countries!";
+      document.getElementById("options").innerHTML = "";
+      return;
+    }
+
+    // pick a yerba mate country
+    const correctCountry = remainingYerbaCountries[Math.floor(Math.random() * remainingYerbaCountries.length)];
+
+    // pick 3 random world flags
+    let optionsPool = [...worldCountries];
+    shuffle(optionsPool);
+    const wrongOptions = optionsPool.slice(0, 3);
+
+    // merge and shuffle
+    const finalOptions = [correctCountry, ...wrongOptions];
+    shuffle(finalOptions);
+
+    const optionsDiv = document.getElementById("options");
+    optionsDiv.innerHTML = "";
+    finalOptions.forEach(option => {
+      const img = document.createElement("img");
+      img.src = option.flag;
+      img.className = "option-flag";
+      img.onclick = () => {
+        if (option.name === correctCountry.name) {
+          document.body.classList.add("win");
+          document.getElementById("message").innerHTML = `✅ Correct! That was ${correctCountry.name}.`;
+          // remove it from remaining list
+          remainingYerbaCountries = remainingYerbaCountries.filter(c => c.name !== correctCountry.name);
+          setTimeout(() => {
+            document.body.classList.remove("win");
+            loadQuestion();
+          }, 600);
+        } else {
+          document.body.classList.add("lose");
+          hearts--;
+          updateHearts();
+          document.getElementById("message").innerHTML = `❌ Wrong! That was ${option.name}.`;
+          setTimeout(() => {
+            document.body.classList.remove("lose");
+            loadQuestion();
+          }, 600);
+        }
+      };
+      optionsDiv.appendChild(img);
+    });
+  }
+
+  updateHearts();
+  loadQuestion();
+</script>
+
+</body>
+</html>
